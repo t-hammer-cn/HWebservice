@@ -13,21 +13,26 @@ public class UKeyStore {
     private String libFile = "C:/Windows/system32/WatchDataV5/Watchdata CSP v5.2/WDPKCS.dll";
     private String pinPassword;
     private Provider provider;
+    private Long registeTime = System.currentTimeMillis() + (8 * 60 * 1000);
 
     public static UKeyStore getInstance() throws CertificateException, KeyStoreException, IOException, NoSuchAlgorithmException {
-        if (UKeyStore.UKeyStore != null) {
-            return UKeyStore.UKeyStore;
+        UKeyStore result = null;
+        if (UKeyStore.UKeyStore != null && (System.currentTimeMillis() <= UKeyStore.UKeyStore.registeTime)) {
+            result = UKeyStore.UKeyStore;
         } else {
-            return new UKeyStore();
+            result = new UKeyStore();
         }
+        return result;
     }
 
     public static UKeyStore getInstance(String cspName, String libFile, String pin) throws CertificateException, KeyStoreException, IOException, NoSuchAlgorithmException {
-        if (UKeyStore.UKeyStore != null) {
-            return UKeyStore.UKeyStore;
+        UKeyStore result = null;
+        if (UKeyStore.UKeyStore != null && (System.currentTimeMillis() <= UKeyStore.UKeyStore.registeTime)) {
+            result = UKeyStore.UKeyStore;
         } else {
-            return new UKeyStore(cspName, libFile, pin);
+            result = new UKeyStore(cspName, libFile, pin);
         }
+        return result;
     }
 
 
