@@ -1,6 +1,7 @@
 package com.utaoo.client.utils;
 
 import org.apache.commons.lang3.StringUtils;
+import org.bouncycastle.jce.provider.BouncyCastleProvider;
 
 import java.io.ByteArrayInputStream;
 import java.io.IOException;
@@ -13,10 +14,13 @@ public class UKeyStore {
     private String libFile = "C:/Windows/system32/WatchDataV5/Watchdata CSP v5.2/WDPKCS.dll";
     private String pinPassword;
     private Provider provider;
-    private Long registeTime = System.currentTimeMillis() + (5 * 60 * 1000);
+    private Long registeTime = System.currentTimeMillis() + (1 * 6 * 1000);
     private KeyStore keyStore;
 
-    public static void main(String[] args) throws CertificateException, KeyStoreException, IOException, NoSuchAlgorithmException, UnrecoverableKeyException {
+    public static void main(String[] args) throws CertificateException, KeyStoreException, IOException, NoSuchAlgorithmException, UnrecoverableKeyException, InterruptedException {
+        System.out.println(UKeyStore.getInstance().getKeyStore());
+        System.out.println(UKeyStore.getInstance().getKeyStore());
+        Thread.sleep(8000);
         System.out.println(UKeyStore.getInstance().getKeyStore());
     }
 
@@ -91,8 +95,6 @@ public class UKeyStore {
         Provider provider = new sun.security.pkcs11.SunPKCS11(configStream);
         this.provider = provider;
         Security.addProvider(provider);
-        System.out.println("初始化了一个新的Provider");
-        this.registeTime = System.currentTimeMillis() + (5 * 60 * 1000);
     }
 
     /**
@@ -110,8 +112,8 @@ public class UKeyStore {
         if (this.provider == null) {
             throw new RuntimeException("还未初始化Ukey！");
         }
-        if (this.keyStore != null && System.currentTimeMillis() <= UKeyStore.UKeyStore.registeTime) {
-            return this.keyStore;
+        if (System.currentTimeMillis() >= UKeyStore.UKeyStore.registeTime) {
+            this.initProvider();
         }
         this.keyStore = KeyStore.getInstance("PKCS11", provider);
         char[] pin = null;
