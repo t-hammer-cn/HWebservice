@@ -13,35 +13,42 @@ public class UKeyStore {
     private String libFile = "C:/Windows/system32/WatchDataV5/Watchdata CSP v5.2/WDPKCS.dll";
     private String pinPassword;
     private Provider provider;
-    private Long registeTime = System.currentTimeMillis() + (8 * 60 * 1000);
+    private Long registeTime = System.currentTimeMillis() + (5 * 60 * 1000);
+    private KeyStore keyStore;
+
+    public static void main(String[] args) throws CertificateException, KeyStoreException, IOException, NoSuchAlgorithmException, UnrecoverableKeyException {
+        System.out.println(UKeyStore.getInstance().getKeyStore());
+    }
 
     public static UKeyStore getInstance() throws CertificateException, KeyStoreException, IOException, NoSuchAlgorithmException {
         UKeyStore result = null;
-        if (UKeyStore.UKeyStore != null && (System.currentTimeMillis() <= UKeyStore.UKeyStore.registeTime)) {
+        if (UKeyStore.UKeyStore != null) {
             result = UKeyStore.UKeyStore;
         } else {
-            result = new UKeyStore();
+            UKeyStore.UKeyStore = result = new UKeyStore();
         }
         return result;
     }
 
     public static UKeyStore getInstance(String cspName, String libFile, String pin) throws CertificateException, KeyStoreException, IOException, NoSuchAlgorithmException {
         UKeyStore result = null;
-        if (UKeyStore.UKeyStore != null && (System.currentTimeMillis() <= UKeyStore.UKeyStore.registeTime)) {
+        if (UKeyStore.UKeyStore != null) {
             result = UKeyStore.UKeyStore;
         } else {
-            result = new UKeyStore(cspName, libFile, pin);
+            UKeyStore.UKeyStore = result = new UKeyStore(cspName, libFile, pin);
         }
         return result;
     }
 
 
     public static UKeyStore getInstance(String cspName, String libFile) throws CertificateException, KeyStoreException, IOException, NoSuchAlgorithmException {
+        UKeyStore result = null;
         if (UKeyStore.UKeyStore != null) {
-            return UKeyStore.UKeyStore;
+            result = UKeyStore.UKeyStore;
         } else {
-            return new UKeyStore(cspName, libFile);
+            UKeyStore.UKeyStore = result = new UKeyStore(cspName, libFile);
         }
+        return result;
     }
 
 
@@ -49,6 +56,7 @@ public class UKeyStore {
         return provider;
     }
 
+    @Deprecated
     public void changePin(String pin) {
         this.pinPassword = pin;
     }
@@ -83,6 +91,8 @@ public class UKeyStore {
         Provider provider = new sun.security.pkcs11.SunPKCS11(configStream);
         this.provider = provider;
         Security.addProvider(provider);
+        System.out.println("初始化了一个新的Provider");
+        this.registeTime = System.currentTimeMillis() + (5 * 60 * 1000);
     }
 
     /**
@@ -97,17 +107,19 @@ public class UKeyStore {
      * @throws UnrecoverableKeyException
      */
     public KeyStore getKeyStore(String pinPassword) throws CertificateException, IOException, NoSuchAlgorithmException, KeyStoreException, UnrecoverableKeyException {
-        if (provider == null) {
+        if (this.provider == null) {
             throw new RuntimeException("还未初始化Ukey！");
         }
-        KeyStore ks;
-        ks = KeyStore.getInstance("PKCS11", provider);
+        if (this.keyStore != null && System.currentTimeMillis() <= UKeyStore.UKeyStore.registeTime) {
+            return this.keyStore;
+        }
+        this.keyStore = KeyStore.getInstance("PKCS11", provider);
         char[] pin = null;
         if (StringUtils.isNotBlank(pinPassword)) {
             pin = pinPassword.toCharArray();
         }
-        ks.load(null, pin);
-        return ks;
+        this.keyStore.load(null, pin);
+        return this.keyStore;
     }
 
     public KeyStore getKeyStore() throws CertificateException, IOException, NoSuchAlgorithmException, KeyStoreException, UnrecoverableKeyException {
