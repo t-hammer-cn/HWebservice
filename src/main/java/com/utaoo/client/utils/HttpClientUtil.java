@@ -1,5 +1,7 @@
 package com.utaoo.client.utils;
 
+import com.alibaba.fastjson.JSONObject;
+import org.apache.commons.lang3.StringUtils;
 import org.apache.http.HttpEntity;
 import org.apache.http.client.methods.CloseableHttpResponse;
 import org.apache.http.client.methods.HttpPost;
@@ -11,16 +13,23 @@ import org.apache.http.util.EntityUtils;
 import javax.net.ssl.SSLContext;
 import java.io.IOException;
 import java.nio.charset.Charset;
+import java.util.Map;
 
 
 @SuppressWarnings("all")
-public class HttpClientUtil {
-
-
+public final class HttpClientUtil {
     private String baseVUrl = "";
     private static HttpClientUtil soapevnUtil;
-    private SSLContext sslContext;
+    private static String cspName;
+    private static String libFile;
 
+    static String getCspName() {
+        return cspName;
+    }
+
+    static String getLibFile() {
+        return libFile;
+    }
 
     /**
      * @param closeableHttpClient
@@ -29,7 +38,7 @@ public class HttpClientUtil {
      * @param SOAPAction
      * @return
      */
-    public String doPostSoap(String soap, String SOAPAction) {
+    private String doPostSoap(String soap, String SOAPAction) {
         return doPostSoap(baseVUrl, soap, SOAPAction);
     }
 
@@ -40,7 +49,7 @@ public class HttpClientUtil {
      * @param SOAPAction
      * @return
      */
-    public String doPostSoap(String url, String soap, String SOAPAction) {
+    private String doPostSoap(String url, String soap, String SOAPAction) {
         //请求体
         String retStr = "";
         HttpPost httpPost = new HttpPost(url);
@@ -66,7 +75,7 @@ public class HttpClientUtil {
         return retStr;
     }
 
-    public static HttpClientUtil getInstance(String baseUrl) throws IOException {
+    private static HttpClientUtil getInstance(String baseUrl) throws IOException {
         if (HttpClientUtil.soapevnUtil != null) {
             return HttpClientUtil.soapevnUtil;
         } else {
@@ -78,22 +87,22 @@ public class HttpClientUtil {
         this.baseVUrl = baseUrl;
     }
 
-
-    private void initSSLContext() throws InterruptedException, IOException {
-        this.setSslContext(TrustSSLSocketFactory.createEasySSLContext());
+    private CloseableHttpClient createClient() throws IOException, InterruptedException {
+        return HttpClientBuilder.create().setSSLContext(TrustSSLSocketFactory.createEasySSLContext()).build();
     }
 
-    private void setSslContext(SSLContext sslContext) {
-        this.sslContext = sslContext;
+    public static void init(String cspName, String libFile) {
+        HttpClientUtil.libFile = libFile;
+        HttpClientUtil.cspName = cspName;
     }
 
-    private SSLContext getSslContext() throws IOException, InterruptedException {
-        //由csp模块控制超时时间
-        initSSLContext();
-        return this.sslContext;
-    }
-
-    public CloseableHttpClient createClient() throws IOException, InterruptedException {
-        return HttpClientBuilder.create().setSSLContext(this.getSslContext()).build();
+    public static JSONObject request(String baseUrl, Map<String, Object> params, String actionName, String resultConstruct) throws Exception {
+        if (StringUtils.isBlank(libFile)) {
+            throw new RuntimeException("还未初始化！");
+        }
+        String soapStr = WebServiceUnit.formatRequestParams(actionName, params, baseUrl);
+        String resStr = getInstance(baseUrl).doPostSoap(soapStr, actionName);
+        JSONObject jsonObject = WebServiceUnit.extractRealRes(resStr, actionName, resultConstruct);
+        return jsonObject;
     }
 }

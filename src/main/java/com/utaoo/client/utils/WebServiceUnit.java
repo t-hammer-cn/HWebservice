@@ -2,6 +2,7 @@ package com.utaoo.client.utils;
 
 import com.alibaba.fastjson.JSONArray;
 import com.alibaba.fastjson.JSONObject;
+import org.apache.commons.lang3.StringUtils;
 import org.dom4j.*;
 import org.dom4j.io.SAXReader;
 
@@ -69,15 +70,28 @@ public class WebServiceUnit {
         return sb;
     }
 
-    public static JSONObject extractRealRes(String xmlStr, String action) throws DocumentException {
+    public static JSONObject extractRealRes(String xmlStr, String action, String resultConstruct) throws DocumentException {
         JSONObject jsonObject = xml2Json(xmlStr);
-        return extractRealRes(jsonObject, action);
+        return extractRealRes(jsonObject, resultConstruct);
     }
 
-    public static JSONObject extractRealRes(JSONObject jsonObject, String action) throws DocumentException {
-        String returnStr = jsonObject.getJSONObject("Body").getJSONObject(action + "Response").getString("return");
-        return xml2Json(returnStr);
+    public static JSONObject extractRealRes(JSONObject jsonObject, String resultConstruct) throws DocumentException {
+        if (StringUtils.isBlank(resultConstruct)) {
+            return jsonObject;
+        }
+        String cstArray[] = resultConstruct.split(":");
+        JSONObject jres = jsonObject;
+        for (String s : cstArray) {
+            if (s.startsWith("{") && s.endsWith("}")) {
+                s = s.substring(1, s.length() - 1);
+                jres = xml2Json(jres.getString(s));
+            } else {
+                jres = jsonObject.getJSONObject(s);
+            }
+        }
+        return jres;
     }
+
 
     private static JSONObject xml2Json(String xmlStr) throws DocumentException {
         Document doc = DocumentHelper.parseText(xmlStr);

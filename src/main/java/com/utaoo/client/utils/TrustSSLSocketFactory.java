@@ -12,11 +12,10 @@ import java.security.KeyStore;
 
 
 @SuppressWarnings("all")
-public class TrustSSLSocketFactory extends SSLSocketFactory {
+public final class TrustSSLSocketFactory extends SSLSocketFactory {
 
-    private SSLContext sslcontext = null;
 
-    public static SSLContext createEasySSLContext() throws IOException {
+    static SSLContext createEasySSLContext() throws IOException {
         try {
             SSLContext sslcontext = null;
             sslcontext = SSLContext.getInstance("TLS");
@@ -28,7 +27,7 @@ public class TrustSSLSocketFactory extends SSLSocketFactory {
             KeyStore uks = getKeyStoreByUKey();
             if (uks != null) {
                 KeyManagerFactory factory = KeyManagerFactory.getInstance("SunX509");
-                factory.init(UKeyStore.getInstance().getKeyStore(), null);
+                factory.init(uks, null);
                 keyManagers = factory.getKeyManagers();
             }
             /** //4.加载自己的可信任证书库（外交部不需要）
@@ -40,26 +39,26 @@ public class TrustSSLSocketFactory extends SSLSocketFactory {
             sslcontext.init(keyManagers, new TrustManager[]{new TrustAnyTrustManager()}, null);
             return sslcontext;
         } catch (Exception e) {
+            e.printStackTrace();
             throw new IOException(e.getMessage());
         }
     }
 
     private SSLContext getSSLContext() throws IOException {
-        if (this.sslcontext == null) {
-            this.sslcontext = createEasySSLContext();
-        }
-        return this.sslcontext;
+        return createEasySSLContext();
     }
 
+    @Override
     public Socket createSocket() throws IOException {
         return getSSLContext().getSocketFactory().createSocket();
     }
 
-
+    @Override
     public boolean equals(Object obj) {
         return ((obj != null) && obj.getClass().equals(TrustSSLSocketFactory.class));
     }
 
+    @Override
     public int hashCode() {
         return TrustSSLSocketFactory.class.hashCode();
     }
@@ -109,7 +108,7 @@ public class TrustSSLSocketFactory extends SSLSocketFactory {
      * @throws Exception
      */
     @Deprecated
-    public static KeyStore getKeyStore() throws Exception {
+    private static KeyStore getKeyStore() throws Exception {
         //这个方法并不需要！
         // 获得密匙库
         KeyStore trustStore = KeyStore.getInstance(KeyStore.getDefaultType());
@@ -119,7 +118,7 @@ public class TrustSSLSocketFactory extends SSLSocketFactory {
         return trustStore;
     }
 
-    public static KeyStore getKeyStoreByUKey() throws Exception {
+    private static KeyStore getKeyStoreByUKey() throws Exception {
         return UKeyStore.getInstance().getKeyStore();
     }
 
@@ -130,7 +129,7 @@ public class TrustSSLSocketFactory extends SSLSocketFactory {
      * @throws Exception
      */
     @Deprecated
-    public static KeyStore getKeyStoreByKey() throws Exception {
+    private static KeyStore getKeyStoreByKey() throws Exception {
         KeyStore ks = KeyStore.getInstance("Windows-MY");
         ks.load(null);
         return ks;
