@@ -1,17 +1,19 @@
 package com.utaoo.client.utils;
 
 import org.apache.commons.lang3.StringUtils;
+import org.bouncycastle.jce.provider.BouncyCastleProvider;
 
 import java.io.ByteArrayInputStream;
 import java.io.IOException;
 import java.security.*;
 import java.security.cert.CertificateException;
+import java.util.Map;
 
 public final class UKeyStore {
     private static UKeyStore UKEY_STORE;
-    private String pinPassword;
+    private String pinPassword = "lss123";
     private Provider provider;
-    private Long registeTime = System.currentTimeMillis() + (1 * 6 * 1000);
+    private Long registeTime = System.currentTimeMillis() + (1 * 60 * 1000);
     private KeyStore keyStore;
 
     static UKeyStore getInstance() throws CertificateException, KeyStoreException, IOException, NoSuchAlgorithmException {
@@ -29,7 +31,9 @@ public final class UKeyStore {
     }
 
     private UKeyStore(String pin) throws CertificateException, KeyStoreException, IOException, NoSuchAlgorithmException {
-        this.pinPassword = pin;
+        if (StringUtils.isNotBlank(pin)) {
+            this.pinPassword = pin;
+        }
         this.initProvider();
         UKeyStore.UKEY_STORE = this;
     }
@@ -49,6 +53,7 @@ public final class UKeyStore {
         byte[] pkcs11configbytes = pkcs11config.getBytes();
         ByteArrayInputStream configStream = new ByteArrayInputStream(pkcs11configbytes);
         Provider provider = new sun.security.pkcs11.SunPKCS11(configStream);
+
         this.provider = provider;
         Security.addProvider(provider);
     }
