@@ -70,7 +70,7 @@ public class WebServiceUnit {
         return sb;
     }
 
-    public static JSONObject extractRealRes(String xmlStr, String action, String resultConstruct) throws DocumentException {
+    public static JSONObject extractRealRes(String xmlStr,  String resultConstruct) throws DocumentException {
         JSONObject jsonObject = xml2Json(xmlStr);
         return extractRealRes(jsonObject, resultConstruct);
     }

@@ -108,7 +108,7 @@ public final class HttpClientUtil {
         }
         String soapStr = WebServiceUnit.formatRequestParams(actionName, params, nameSpace);
         String resStr = getInstance(baseUrl).doPostSoap(soapStr, actionName);
-        JSONObject jsonObject = WebServiceUnit.extractRealRes(resStr, actionName, resultConstruct);
+        JSONObject jsonObject = WebServiceUnit.extractRealRes(resStr, resultConstruct);
         return jsonObject;
     }
 }
