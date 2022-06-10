@@ -57,8 +57,6 @@ public final class HttpClientUtil {
         try {
             httpPost.setHeader("Content-Type", "text/xml;charset=UTF-8");
             httpPost.setHeader("SOAPAction", SOAPAction);
-            System.out.println("SOAPAction:" + SOAPAction);
-            System.out.println("SOAPXML:" + soap);
             StringEntity data = new StringEntity(soap,
                     Charset.forName("UTF-8"));
             httpPost.setEntity(data);
@@ -101,10 +99,14 @@ public final class HttpClientUtil {
     }
 
     public static JSONObject request(String baseUrl, Map<String, Object> params, String actionName, String resultConstruct) throws Exception {
+        return request(baseUrl, baseUrl, params, actionName, resultConstruct);
+    }
+
+    public static JSONObject request(String baseUrl, String nameSpace, Map<String, Object> params, String actionName, String resultConstruct) throws Exception {
         if (StringUtils.isBlank(libFile)) {
             throw new RuntimeException("还未初始化！");
         }
-        String soapStr = WebServiceUnit.formatRequestParams(actionName, params, baseUrl);
+        String soapStr = WebServiceUnit.formatRequestParams(actionName, params, nameSpace);
         String resStr = getInstance(baseUrl).doPostSoap(soapStr, actionName);
         JSONObject jsonObject = WebServiceUnit.extractRealRes(resStr, actionName, resultConstruct);
         return jsonObject;

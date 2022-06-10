@@ -12,10 +12,10 @@ import java.util.Map;
 
 
 public class WebServiceUnit {
-    public static String formatRequestParams(String methodName, Map<String, Object> params, String url) throws Exception {
+    public static String formatRequestParams(String methodName, Map<String, Object> params, String nameSpace) throws Exception {
         StringBuffer soapRequestParams = new StringBuffer();
 //        soapRequestParams.append("<?xml version=\"1.0\" encoding=\"utf-8\"?>\n");
-        soapRequestParams.append("<soapevn:Envelope xmlns:soapevn=\"http://schemas.xmlsoap.org/soap/envelope/\" xmlns:eop=\"" + url + "\">");
+        soapRequestParams.append("<soapevn:Envelope xmlns:soapevn=\"http://schemas.xmlsoap.org/soap/envelope/\" xmlns:eop=\"" + nameSpace + "\">");
         soapRequestParams.append("<soapevn:Header/>");
         soapRequestParams.append("<soapevn:Body>");
         soapRequestParams.append(String.format("<%s>", methodName));
@@ -86,7 +86,7 @@ public class WebServiceUnit {
                 s = s.substring(1, s.length() - 1);
                 jres = xml2Json(jres.getString(s));
             } else {
-                jres = jsonObject.getJSONObject(s);
+                jres = jres.getJSONObject(s);
             }
         }
         return jres;
