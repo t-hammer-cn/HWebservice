@@ -5,6 +5,7 @@ import org.apache.commons.lang3.StringUtils;
 import org.apache.http.HttpEntity;
 import org.apache.http.client.methods.CloseableHttpResponse;
 import org.apache.http.client.methods.HttpPost;
+import org.apache.http.conn.ssl.NoopHostnameVerifier;
 import org.apache.http.entity.StringEntity;
 import org.apache.http.impl.client.CloseableHttpClient;
 import org.apache.http.impl.client.HttpClientBuilder;
@@ -56,6 +57,8 @@ public final class HttpClientUtil {
         try {
             httpPost.setHeader("Content-Type", "text/xml;charset=UTF-8");
             httpPost.setHeader("SOAPAction", SOAPAction);
+            System.out.println("SOAPAction:" + SOAPAction);
+            System.out.println("SOAPXML:" + soap);
             StringEntity data = new StringEntity(soap,
                     Charset.forName("UTF-8"));
             httpPost.setEntity(data);
@@ -88,8 +91,9 @@ public final class HttpClientUtil {
     }
 
     private CloseableHttpClient createClient() throws IOException, InterruptedException {
-        return HttpClientBuilder.create().setSSLContext(TrustSSLSocketFactory.createEasySSLContext()).build();
+        return HttpClientBuilder.create().setSSLContext(TrustSSLSocketFactory.createEasySSLContext()).setSSLHostnameVerifier(new NoopHostnameVerifier()).build();
     }
+
 
     public static void init(String cspName, String libFile) {
         HttpClientUtil.libFile = libFile;

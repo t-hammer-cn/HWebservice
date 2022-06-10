@@ -24,7 +24,7 @@ public class WebServiceUnit {
             soapRequestParams.append(stringObjectEntry.getValue());
             soapRequestParams.append("</" + stringObjectEntry.getKey() + ">");
         }
-        soapRequestParams.append(String.format("<%s>", methodName));
+        soapRequestParams.append(String.format("</%s>", methodName));
         soapRequestParams.append("</soapevn:Body>");
         soapRequestParams.append("</soapevn:Envelope>");
         return soapRequestParams.toString();
