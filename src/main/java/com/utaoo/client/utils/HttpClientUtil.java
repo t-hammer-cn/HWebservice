@@ -70,6 +70,7 @@ public final class HttpClientUtil {
                 retStr = EntityUtils.toString(httpEntity, "UTF-8");
             }
             // 释放资源
+            response.close();
             client.close();
         } catch (Exception e) {
             e.printStackTrace();
@@ -77,7 +78,10 @@ public final class HttpClientUtil {
         return retStr;
     }
 
-    private static HttpClientUtil getInstance(String baseUrl) throws IOException {
+    public static HttpClientUtil getInstance(String baseUrl, String libFile, String cspName, String keyParam) throws IOException, InterruptedException {
+        HttpClientUtil.libFile = libFile;
+        HttpClientUtil.cspName = cspName;
+        HttpClientUtil.keyParam = keyParam;
         if (HttpClientUtil.soapevnUtil != null) {
             return HttpClientUtil.soapevnUtil;
         } else {
@@ -85,41 +89,36 @@ public final class HttpClientUtil {
         }
     }
 
-    private HttpClientUtil(String baseUrl) throws IOException {
+    private HttpClientUtil(String baseUrl) throws IOException, InterruptedException {
         this.baseVUrl = baseUrl;
-        this.keyParam = keyParam;
         HttpClientUtil.soapevnUtil = this;
+        this.createClient();
     }
 
     private CloseableHttpClient createClient() throws IOException, InterruptedException {
         return HttpClientBuilder.create().setSSLContext(TrustSSLSocketFactory.createEasySSLContext(keyParam)).setSSLHostnameVerifier(new NoopHostnameVerifier()).build();
     }
 
-    public static void init(String cspName, String libFile, String keyParam) {
-        HttpClientUtil.libFile = libFile;
-        HttpClientUtil.cspName = cspName;
-        HttpClientUtil.keyParam = keyParam;
-    }
 
-    public static JSONObject request(String baseUrl, Map<String, Object> params, String actionName, String resultConstruct) throws Exception {
+    public JSONObject request(String baseUrl, Map<String, Object> params, String actionName, String resultConstruct) throws Exception {
         return request(baseUrl, baseUrl, params, actionName, resultConstruct);
     }
 
-    public static JSONObject request(String baseUrl, String nameSpace, Map<String, Object> params, String actionName, String resultConstruct) throws Exception {
+    public JSONObject request(String baseUrl, String nameSpace, Map<String, Object> params, String actionName, String resultConstruct) throws Exception {
         String resStr = requestXMLres(baseUrl, nameSpace, params, actionName);
         JSONObject jsonObject = WebServiceUnit.extractRealRes(resStr, resultConstruct);
         return jsonObject;
     }
 
-    public static String requestXMLres(String baseUrl, Map<String, Object> params, String actionName) throws Exception {
+    public String requestXMLres(String baseUrl, Map<String, Object> params, String actionName) throws Exception {
         return requestXMLres(baseUrl, baseUrl, params, actionName);
     }
 
-    public static String requestXMLres(String baseUrl, String nameSpace, Map<String, Object> params, String actionName) throws Exception {
+    public String requestXMLres(String baseUrl, String nameSpace, Map<String, Object> params, String actionName) throws Exception {
         if (StringUtils.isBlank(libFile)) {
             throw new RuntimeException("还未初始化！");
         }
         String soapStr = WebServiceUnit.formatRequestParams(actionName, params, nameSpace);
-        return getInstance(baseUrl).doPostSoap(soapStr, actionName);
+        return HttpClientUtil.soapevnUtil.doPostSoap(soapStr, actionName);
     }
 }
