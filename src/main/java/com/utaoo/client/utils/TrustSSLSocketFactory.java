@@ -10,8 +10,9 @@ import java.io.IOException;
 import java.net.InetAddress;
 import java.net.Socket;
 import java.net.UnknownHostException;
-import java.security.KeyStore;
+import java.security.*;
 import java.security.cert.Certificate;
+import java.security.cert.CertificateException;
 import java.util.Enumeration;
 
 
@@ -22,7 +23,7 @@ public final class TrustSSLSocketFactory extends SSLSocketFactory {
         return createEasySSLContext(null);
     }
 
-    static SSLContext createEasySSLContext(String keyParam) throws IOException {
+    static SSLContext createEasySSLContext(String keyParam) {
         try {
             SSLContext sslcontext = null;
             sslcontext = SSLContext.getInstance("TLS");
@@ -62,10 +63,20 @@ public final class TrustSSLSocketFactory extends SSLSocketFactory {
             }
             sslcontext.init(keyManagers, new TrustManager[]{new TrustAnyTrustManager()}, null);
             return sslcontext;
-        } catch (Exception e) {
+        } catch (IOException e) {
             e.printStackTrace();
-            throw new IOException(e.getMessage());
+        } catch (KeyManagementException e) {
+            e.printStackTrace();
+        } catch (UnrecoverableKeyException e) {
+            e.printStackTrace();
+        } catch (CertificateException e) {
+            e.printStackTrace();
+        } catch (NoSuchAlgorithmException e) {
+            e.printStackTrace();
+        } catch (KeyStoreException e) {
+            e.printStackTrace();
         }
+        throw new RuntimeException();
     }
 
     private SSLContext getSSLContext() throws IOException {
@@ -142,7 +153,7 @@ public final class TrustSSLSocketFactory extends SSLSocketFactory {
         return trustStore;
     }
 
-    private static KeyStore getKeyStoreByUKey() throws Exception {
+    private static KeyStore getKeyStoreByUKey() throws CertificateException, IOException, NoSuchAlgorithmException, KeyStoreException {
         return UKeyStore.getInstance().getKeyStore();
     }
 

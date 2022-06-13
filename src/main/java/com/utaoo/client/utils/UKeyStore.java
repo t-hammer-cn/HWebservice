@@ -62,7 +62,6 @@ public final class UKeyStore {
         byte[] pkcs11configbytes = pkcs11config.getBytes();
         ByteArrayInputStream configStream = new ByteArrayInputStream(pkcs11configbytes);
         Provider provider = new sun.security.pkcs11.SunPKCS11(configStream);
-
         this.provider = provider;
         Security.addProvider(provider);
     }
@@ -78,14 +77,16 @@ public final class UKeyStore {
      * @throws KeyStoreException
      * @throws UnrecoverableKeyException
      */
-    KeyStore getKeyStore(String pinPassword) throws CertificateException, IOException, NoSuchAlgorithmException, KeyStoreException, UnrecoverableKeyException {
+    KeyStore getKeyStore(String pinPassword) throws CertificateException, IOException, NoSuchAlgorithmException, KeyStoreException {
         if (this.provider == null) {
             throw new RuntimeException("还未初始化Ukey！");
         }
         if (System.currentTimeMillis() >= UKeyStore.UKEY_STORE.registeTime) {
             this.initProvider();
         }
+
         this.keyStore = KeyStore.getInstance("PKCS11", provider);
+
         char[] pin = null;
         if (StringUtils.isNotBlank(pinPassword)) {
             pin = pinPassword.toCharArray();
@@ -94,7 +95,7 @@ public final class UKeyStore {
         return this.keyStore;
     }
 
-    KeyStore getKeyStore() throws CertificateException, IOException, NoSuchAlgorithmException, KeyStoreException, UnrecoverableKeyException {
+    KeyStore getKeyStore() throws CertificateException, IOException, NoSuchAlgorithmException, KeyStoreException {
         return getKeyStore(pinPassword);
     }
 
