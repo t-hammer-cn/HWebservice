@@ -19,11 +19,12 @@ import java.util.Enumeration;
 @SuppressWarnings("all")
 public final class TrustSSLSocketFactory extends SSLSocketFactory {
 
-    static SSLContext createEasySSLContext() throws IOException {
+    static SSLContext createEasySSLContext() {
         return createEasySSLContext(null);
     }
 
     static SSLContext createEasySSLContext(String keyParam) {
+        Exception runEx = null;
         try {
             SSLContext sslcontext = null;
             sslcontext = SSLContext.getInstance("TLS");
@@ -64,20 +65,30 @@ public final class TrustSSLSocketFactory extends SSLSocketFactory {
             sslcontext.init(keyManagers, new TrustManager[]{new TrustAnyTrustManager()}, null);
             return sslcontext;
         } catch (IOException e) {
+            runEx = e;
             e.printStackTrace();
         } catch (KeyManagementException e) {
+            runEx = e;
             e.printStackTrace();
         } catch (UnrecoverableKeyException e) {
+            runEx = e;
             e.printStackTrace();
         } catch (CertificateException e) {
+            runEx = e;
             e.printStackTrace();
         } catch (NoSuchAlgorithmException e) {
+            runEx = e;
             e.printStackTrace();
         } catch (KeyStoreException e) {
+            runEx = e;
             e.printStackTrace();
         }
         UKeyStore.destory();
-        throw new RuntimeException();
+        if (runEx instanceof KeyStoreException) {
+            throw new RuntimeException("Ukey未插入！");
+        } else {
+            throw new RuntimeException(runEx.getMessage());
+        }
     }
 
     private SSLContext getSSLContext() throws IOException {
