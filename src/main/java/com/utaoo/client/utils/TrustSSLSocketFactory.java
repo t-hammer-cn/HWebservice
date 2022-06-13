@@ -76,6 +76,7 @@ public final class TrustSSLSocketFactory extends SSLSocketFactory {
         } catch (KeyStoreException e) {
             e.printStackTrace();
         }
+        UKeyStore.destory();
         throw new RuntimeException();
     }
 

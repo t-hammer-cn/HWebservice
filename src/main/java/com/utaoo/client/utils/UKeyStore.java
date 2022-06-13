@@ -17,6 +17,11 @@ public final class UKeyStore {
     private KeyStore keyStore;
     private String keyId;
 
+    public static void destory() {
+        UKeyStore.UKEY_STORE = null;
+        System.gc();
+    }
+
     public static String getKeyId() {
         return UKEY_STORE.keyId;
     }
