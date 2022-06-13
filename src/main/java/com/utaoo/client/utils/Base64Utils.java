@@ -19,4 +19,5 @@ public class Base64Utils {
         }
         return Base64.decodeStr(base64, Charset.forName("utf-8"));
     }
+
 }

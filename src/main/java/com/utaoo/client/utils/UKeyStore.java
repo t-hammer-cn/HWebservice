@@ -15,6 +15,15 @@ public final class UKeyStore {
     private Provider provider;
     private Long registeTime = System.currentTimeMillis() + (1 * 60 * 1000);
     private KeyStore keyStore;
+    private String keyId;
+
+    public static String getKeyId() {
+        return UKEY_STORE.keyId;
+    }
+
+    void setKeyId(String keyId) {
+        this.keyId = keyId;
+    }
 
     static UKeyStore getInstance() throws CertificateException, KeyStoreException, IOException, NoSuchAlgorithmException {
         return getInstance(null);

@@ -1,6 +1,8 @@
 package com.utaoo.client.utils;
 
 
+import org.apache.commons.lang3.StringUtils;
+
 import javax.net.ssl.*;
 import java.io.File;
 import java.io.FileInputStream;
@@ -9,13 +11,18 @@ import java.net.InetAddress;
 import java.net.Socket;
 import java.net.UnknownHostException;
 import java.security.KeyStore;
+import java.security.cert.Certificate;
+import java.util.Enumeration;
 
 
 @SuppressWarnings("all")
 public final class TrustSSLSocketFactory extends SSLSocketFactory {
 
-
     static SSLContext createEasySSLContext() throws IOException {
+        return createEasySSLContext(null);
+    }
+
+    static SSLContext createEasySSLContext(String keyParam) throws IOException {
         try {
             SSLContext sslcontext = null;
             sslcontext = SSLContext.getInstance("TLS");
@@ -30,12 +37,29 @@ public final class TrustSSLSocketFactory extends SSLSocketFactory {
                 factory.init(uks, null);
                 keyManagers = factory.getKeyManagers();
             }
-            /** //4.加载自己的可信任证书库（外交部不需要）
+            /** //4.加载自己的可信任证书库（当前应用下不需要）
              KeyStore trustStore = getKeyStore();if (trustStore != null) {
              TrustManagerFactory factory = TrustManagerFactory.getInstance("X509");
              factory.init(trustStore);
              trustManagers = factory.getTrustManagers();
              }*/
+            Enumeration<String> aliases = uks.aliases();
+            if (StringUtils.isNotBlank(keyParam)) {
+                String keyId = null;
+                while (aliases.hasMoreElements()) {
+                    String aliasName = aliases.nextElement();
+                    Integer offset = aliasName.indexOf(keyParam);
+                    if (offset != -1) {
+                        keyId = aliasName.substring(0, offset);
+                        break;
+                    }
+                }
+                if (StringUtils.isBlank(keyId)) {
+                    throw new RuntimeException("构建keyId失败！");
+                } else {
+                    UKeyStore.getInstance().setKeyId(keyId);
+                }
+            }
             sslcontext.init(keyManagers, new TrustManager[]{new TrustAnyTrustManager()}, null);
             return sslcontext;
         } catch (Exception e) {
