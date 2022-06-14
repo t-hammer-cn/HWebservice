@@ -11,13 +11,13 @@ import java.util.Map;
 
 public final class UKeyStore {
     private static UKeyStore UKEY_STORE;
-    private String pinPassword = "lss123";
+    private String pinPassword = "";
     private Provider provider;
-    private Long registeTime = System.currentTimeMillis() + (1 * 60 * 1000);
     private KeyStore keyStore;
     private String keyId;
 
     public static void destory() {
+        Security.removeProvider(UKeyStore.UKEY_STORE.provider.getName());
         UKeyStore.UKEY_STORE = null;
         System.gc();
     }
@@ -86,10 +86,6 @@ public final class UKeyStore {
         if (this.provider == null) {
             throw new RuntimeException("还未初始化Ukey！");
         }
-        if (System.currentTimeMillis() >= UKeyStore.UKEY_STORE.registeTime) {
-            this.initProvider();
-        }
-
         this.keyStore = KeyStore.getInstance("PKCS11", provider);
 
         char[] pin = null;

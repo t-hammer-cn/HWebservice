@@ -20,10 +20,11 @@ import java.util.Map;
 @SuppressWarnings("all")
 public final class HttpClientUtil {
     private String baseVUrl = "";
-    private static HttpClientUtil soapevnUtil;
-    private static String cspName;
-    private static String libFile;
+    private static HttpClientUtil soapevnUtil = null;
+    private static String cspName = null;
+    private static String libFile = null;
     private static String keyParam = null;
+    private static String pin = null;
 
     static String getCspName() {
         return cspName;
@@ -57,10 +58,18 @@ public final class HttpClientUtil {
         HttpPost httpPost = new HttpPost(url);
         httpPost.setHeader("Content-Type", "text/xml;charset=UTF-8");
         httpPost.setHeader("SOAPAction", SOAPAction);
+        CloseableHttpClient client = createClient();
+        String keyCn = UKeyStore.getKeyId();
+        String keyCnBase64 = Base64Utils.strToBase64(keyCn);
+        if (soap.contains("#keyCn#")) {
+            soap = soap.replaceAll("#keyCn#", keyCn);
+        } else if (soap.contains("#keyCnBase64#")) {
+            soap = soap.replaceAll("#keyCnBase64#", keyCnBase64);
+        }
         StringEntity data = new StringEntity(soap,
                 Charset.forName("UTF-8"));
         httpPost.setEntity(data);
-        CloseableHttpClient client = createClient();
+
         CloseableHttpResponse response = client
                 .execute(httpPost);
         HttpEntity httpEntity = response.getEntity();
@@ -74,10 +83,11 @@ public final class HttpClientUtil {
         return retStr;
     }
 
-    public static HttpClientUtil getInstance(String baseUrl, String libFile, String cspName, String keyParam) throws IOException, InterruptedException {
+    public static HttpClientUtil getInstance(String baseUrl, String libFile, String cspName, String keyParam, String pin) throws IOException, InterruptedException {
         HttpClientUtil.libFile = libFile;
         HttpClientUtil.cspName = cspName;
         HttpClientUtil.keyParam = keyParam;
+        HttpClientUtil.pin = pin;
         if (HttpClientUtil.soapevnUtil != null) {
             return HttpClientUtil.soapevnUtil;
         } else {
@@ -91,7 +101,7 @@ public final class HttpClientUtil {
     }
 
     private CloseableHttpClient createClient() throws IOException, InterruptedException {
-        return HttpClientBuilder.create().setSSLContext(TrustSSLSocketFactory.createEasySSLContext(keyParam)).setSSLHostnameVerifier(new NoopHostnameVerifier()).build();
+        return HttpClientBuilder.create().setSSLContext(TrustSSLSocketFactory.createEasySSLContext(keyParam, pin)).setSSLHostnameVerifier(new NoopHostnameVerifier()).build();
     }
 
 

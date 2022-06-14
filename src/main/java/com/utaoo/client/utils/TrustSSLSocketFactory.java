@@ -20,10 +20,10 @@ import java.util.Enumeration;
 public final class TrustSSLSocketFactory extends SSLSocketFactory {
 
     static SSLContext createEasySSLContext() {
-        return createEasySSLContext(null);
+        return createEasySSLContext(null, null);
     }
 
-    static SSLContext createEasySSLContext(String keyParam) {
+    static SSLContext createEasySSLContext(String keyParam, String pin) {
         Exception runEx = null;
         try {
             SSLContext sslcontext = null;
@@ -33,7 +33,7 @@ public final class TrustSSLSocketFactory extends SSLSocketFactory {
             TrustManager[] trustManagers = null;
 
             /** 3.获取ukey证书 */
-            KeyStore uks = getKeyStoreByUKey();
+            KeyStore uks = getKeyStoreByUKey(pin);
             if (uks != null) {
                 KeyManagerFactory factory = KeyManagerFactory.getInstance("SunX509");
                 factory.init(uks, null);
@@ -165,8 +165,9 @@ public final class TrustSSLSocketFactory extends SSLSocketFactory {
         return trustStore;
     }
 
-    private static KeyStore getKeyStoreByUKey() throws CertificateException, IOException, NoSuchAlgorithmException, KeyStoreException {
-        return UKeyStore.getInstance().getKeyStore();
+
+    private static KeyStore getKeyStoreByUKey(String pin) throws CertificateException, IOException, NoSuchAlgorithmException, KeyStoreException {
+        return UKeyStore.getInstance(pin).getKeyStore();
     }
 
     /**
