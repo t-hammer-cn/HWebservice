@@ -2,6 +2,7 @@ package com.utaoo.client.utils;
 
 
 import org.apache.commons.lang3.StringUtils;
+import sun.security.pkcs11.wrapper.PKCS11Exception;
 
 import javax.net.ssl.*;
 import java.io.File;
@@ -65,8 +66,11 @@ public final class TrustSSLSocketFactory extends SSLSocketFactory {
             sslcontext.init(keyManagers, new TrustManager[]{new TrustAnyTrustManager()}, null);
             return sslcontext;
         } catch (IOException e) {
-            runEx = e;
-            e.printStackTrace();
+            if (e.getCause().getMessage().contains("CKR_PIN_LOCKED")) {
+                runEx = new RuntimeException("密码错误次数过多Ukey被锁定！");
+            } else {
+                runEx = e;
+            }
         } catch (KeyManagementException e) {
             runEx = e;
             e.printStackTrace();
@@ -80,15 +84,11 @@ public final class TrustSSLSocketFactory extends SSLSocketFactory {
             runEx = e;
             e.printStackTrace();
         } catch (KeyStoreException e) {
-            runEx = e;
-            e.printStackTrace();
-        }
-        UKeyStore.destory();
-        if (runEx instanceof KeyStoreException) {
             throw new RuntimeException("Ukey未插入！");
-        } else {
-            throw new RuntimeException(runEx.getMessage());
+        } finally {
+            UKeyStore.destory();
         }
+        throw new RuntimeException(runEx.getMessage());
     }
 
     private SSLContext getSSLContext() throws IOException {
