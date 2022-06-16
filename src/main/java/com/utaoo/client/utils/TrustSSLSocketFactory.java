@@ -5,6 +5,7 @@ import org.apache.commons.lang3.StringUtils;
 import sun.security.pkcs11.wrapper.PKCS11Exception;
 
 import javax.net.ssl.*;
+import javax.security.auth.login.LoginException;
 import java.io.File;
 import java.io.FileInputStream;
 import java.io.IOException;
@@ -66,10 +67,12 @@ public final class TrustSSLSocketFactory extends SSLSocketFactory {
             sslcontext.init(keyManagers, new TrustManager[]{new TrustAnyTrustManager()}, null);
             return sslcontext;
         } catch (IOException e) {
-            if (e.getCause().getMessage().contains("CKR_PIN_LOCKED")) {
-                runEx = new RuntimeException("密码错误次数过多Ukey被锁定！");
-            } else {
-                runEx = e;
+            if (e.getCause() instanceof LoginException) {
+                if (e.getCause().getCause() instanceof PKCS11Exception) {
+                    if (e.getCause().getCause().toString().contains("CKR_PIN_LOCKED")) {
+                        throw new RuntimeException("密码错误次数过多Ukey被锁定！");
+                    }
+                }
             }
         } catch (KeyManagementException e) {
             runEx = e;
@@ -85,10 +88,13 @@ public final class TrustSSLSocketFactory extends SSLSocketFactory {
             e.printStackTrace();
         } catch (KeyStoreException e) {
             throw new RuntimeException("Ukey未插入！");
-        } finally {
+        }
+        RuntimeException runtimeException = new RuntimeException();
+        runtimeException.initCause(runEx);
+        if (runEx != null) {
             UKeyStore.destory();
         }
-        throw new RuntimeException(runEx.getMessage());
+        throw runtimeException;
     }
 
     private SSLContext getSSLContext() throws IOException {

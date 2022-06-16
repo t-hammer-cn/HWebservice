@@ -11,7 +11,6 @@ import org.apache.http.impl.client.CloseableHttpClient;
 import org.apache.http.impl.client.HttpClientBuilder;
 import org.apache.http.util.EntityUtils;
 
-import javax.net.ssl.SSLContext;
 import java.io.IOException;
 import java.nio.charset.Charset;
 import java.util.Map;
@@ -105,21 +104,21 @@ public final class HttpClientUtil {
     }
 
 
-    public JSONObject request(String baseUrl, Map<String, Object> params, String actionName, String resultConstruct) throws Exception {
-        return request(baseUrl, baseUrl, params, actionName, resultConstruct);
+    public JSONObject request(Map<String, Object> params, String actionName, String resultConstruct) throws Exception {
+        return request(baseVUrl, params, actionName, resultConstruct);
     }
 
-    public JSONObject request(String baseUrl, String nameSpace, Map<String, Object> params, String actionName, String resultConstruct) throws Exception {
-        String resStr = requestXMLres(baseUrl, nameSpace, params, actionName);
+    public JSONObject request(String nameSpace, Map<String, Object> params, String actionName, String resultConstruct) throws Exception {
+        String resStr = requestXMLres(nameSpace, params, actionName);
         JSONObject jsonObject = WebServiceUnit.extractRealRes(resStr, resultConstruct);
         return jsonObject;
     }
 
-    public String requestXMLres(String baseUrl, Map<String, Object> params, String actionName) throws Exception {
-        return requestXMLres(baseUrl, baseUrl, params, actionName);
+    public String requestXMLres(Map<String, Object> params, String actionName) throws Exception {
+        return requestXMLres(baseVUrl, params, actionName);
     }
 
-    public String requestXMLres(String baseUrl, String nameSpace, Map<String, Object> params, String actionName) throws Exception {
+    public String requestXMLres(String nameSpace, Map<String, Object> params, String actionName) throws Exception {
         if (StringUtils.isBlank(libFile)) {
             throw new RuntimeException("还未初始化！");
         }
