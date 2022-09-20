@@ -44,6 +44,10 @@ public final class HttpClientUtil {
         return doPostSoap(baseVUrl, soap, SOAPAction);
     }
 
+    private String doPost(String url, String requestStr) throws IOException, InterruptedException {
+        return doPostSoap(baseVUrl, requestStr, null);
+    }
+
     /**
      * @param closeableHttpClient
      * @param url
@@ -55,8 +59,10 @@ public final class HttpClientUtil {
         //请求体
         String retStr = "";
         HttpPost httpPost = new HttpPost(url);
-        httpPost.setHeader("Content-Type", "text/xml;charset=UTF-8");
-        httpPost.setHeader("SOAPAction", SOAPAction);
+        if (StringUtils.isNotBlank(SOAPAction)) {
+            httpPost.setHeader("Content-Type", "text/xml;charset=UTF-8");
+            httpPost.setHeader("SOAPAction", SOAPAction);
+        }
         CloseableHttpClient client = createClient();
         String keyCn = UKeyStore.getKeyId();
         String keyCnBase64 = Base64Utils.strToBase64(keyCn);
@@ -81,6 +87,7 @@ public final class HttpClientUtil {
         client.close();
         return retStr;
     }
+
 
     public static HttpClientUtil getInstance(String baseUrl, String libFile, String cspName, String keyParam, String pin) throws IOException, InterruptedException {
         HttpClientUtil.libFile = libFile;
@@ -112,6 +119,11 @@ public final class HttpClientUtil {
         String resStr = requestXMLres(nameSpace, params, actionName);
         JSONObject jsonObject = WebServiceUnit.extractRealRes(resStr, resultConstruct);
         return jsonObject;
+    }
+
+    public String requestGetStr(String url, String requestEntity) throws Exception {
+        String str = HttpClientUtil.soapevnUtil.doPost(url, requestEntity);
+        return str;
     }
 
     public String requestXMLres(Map<String, Object> params, String actionName) throws Exception {
