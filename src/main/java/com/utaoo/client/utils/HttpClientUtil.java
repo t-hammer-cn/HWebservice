@@ -45,7 +45,7 @@ public final class HttpClientUtil {
     }
 
     private String doPost(String url, String requestStr) throws IOException, InterruptedException {
-        return doPostSoap(baseVUrl, requestStr, null);
+        return doPostSoap(url, requestStr, null);
     }
 
     /**
