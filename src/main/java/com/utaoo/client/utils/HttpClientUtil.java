@@ -55,7 +55,7 @@ public final class HttpClientUtil {
      * @param SOAPAction
      * @return
      */
-    private String doPostSoap(String url, String soap, String SOAPAction) throws IOException, InterruptedException {
+    private String doPostSoap(String url, String requestStr, String SOAPAction) throws IOException, InterruptedException {
         //请求体
         String retStr = "";
         HttpPost httpPost = new HttpPost(url);
@@ -66,15 +66,16 @@ public final class HttpClientUtil {
         CloseableHttpClient client = createClient();
         String keyCn = UKeyStore.getKeyId();
         String keyCnBase64 = Base64Utils.strToBase64(keyCn);
-        if (soap.contains("#keyCn#")) {
-            soap = soap.replaceAll("#keyCn#", keyCn);
-        } else if (soap.contains("#keyCnBase64#")) {
-            soap = soap.replaceAll("#keyCnBase64#", keyCnBase64);
+        if (requestStr.contains("#keyCn#")) {
+            requestStr = requestStr.replaceAll("#keyCn#", keyCn);
+        } else if (requestStr.contains("#keyCnBase64#")) {
+            requestStr = requestStr.replaceAll("#keyCnBase64#", keyCnBase64);
         }
-        StringEntity data = new StringEntity(soap,
-                Charset.forName("UTF-8"));
-        httpPost.setEntity(data);
-
+        if (StringUtils.isNotBlank(requestStr)) {
+            StringEntity data = new StringEntity(requestStr,
+                    Charset.forName("UTF-8"));
+            httpPost.setEntity(data);
+        }
         CloseableHttpResponse response = client
                 .execute(httpPost);
         HttpEntity httpEntity = response.getEntity();
