@@ -66,12 +66,12 @@ public final class HttpClientUtil {
         CloseableHttpClient client = createClient();
         String keyCn = UKeyStore.getKeyId();
         String keyCnBase64 = Base64Utils.strToBase64(keyCn);
-        if (requestStr.contains("#keyCn#")) {
-            requestStr = requestStr.replaceAll("#keyCn#", keyCn);
-        } else if (requestStr.contains("#keyCnBase64#")) {
-            requestStr = requestStr.replaceAll("#keyCnBase64#", keyCnBase64);
-        }
         if (StringUtils.isNotBlank(requestStr)) {
+            if (requestStr.contains("#keyCn#")) {
+                requestStr = requestStr.replaceAll("#keyCn#", keyCn);
+            } else if (requestStr.contains("#keyCnBase64#")) {
+                requestStr = requestStr.replaceAll("#keyCnBase64#", keyCnBase64);
+            }
             StringEntity data = new StringEntity(requestStr,
                     Charset.forName("UTF-8"));
             httpPost.setEntity(data);
